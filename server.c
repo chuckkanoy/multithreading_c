@@ -28,7 +28,7 @@ void *handleThread(int mysockfd)
     while(strcmp(buffer, "EXIT\n") != 0)
     {
         void *ret;
-        sleep(1); //give main enough time to get another client if it needs to
+        //sleep(1); //give main enough time to get another client if it needs to
 
         bzero(buffer,256);
         n = read(mysockfd,buffer,255); //reads from socket
@@ -36,20 +36,25 @@ void *handleThread(int mysockfd)
             error("ERROR reading from socket"); //produces error message if error code is present; stops code
         if(strcmp(buffer, "EXIT\n") != 0)
         {
-            printf("Here is the message from client %d: %s\n",getpid(), buffer); //prints message if no error occurs
+            printf("Here is the message from client %d: %s\n",mysockfd, buffer); //prints message if no error occurs
 
             n = write(mysockfd,"I got your message",18); //writes message reception message
             if (n < 0)
-                error("ERROR writing to socket"); //produces error message if error code is present
-        }else{
+                {
+                    error("ERROR writing to socket"); //produces error message if error code is present
+                 }
+        }
+        else{
+
             close(mysockfd);
             pthread_exit(NULL);
+            //return NULL;
         }
 
     }
     //END LOOP
 
-    return NULL;
+    //return NULL;
 }
 
 int main(int argc, char* argv[])
@@ -98,8 +103,9 @@ int main(int argc, char* argv[])
     //LOOP
     while(1)
     {
-        usleep(1); //give main enough time to get another client if it needs to
+        //usleep(1); //give main enough time to get another client if it needs to
         clilen = sizeof(cli_addr);
+        printf("1\n");
         newsockfd = accept(sockfd,
                            (struct sockaddr *) &cli_addr,
                            &clilen); /*waits until proper connection has been made to a client
@@ -125,19 +131,18 @@ int main(int argc, char* argv[])
 
 
         //close(sockfd);
-        if(pthread_create(&pth, NULL, handleThread(newsockfd), "process...") == 0){
-            close(sockfd);
-            //pthread_join(pth, NULL);
-        }
-        else{
+        if(pthread_create(&pth, NULL, handleThread, newsockfd) < 0){
+           // close(sockfd);
+            
             printf("Failed to create thread\n");
         }
+        //pthread_join(pth, NULL);
         //usleep(1); //give main enough time to get another client if it needs to
 
     }
     //END LOOP
 
-    close(newsockfd);
+    //close(newsockfd);
     close(sockfd);
     return 0; //closes up everything and ends program; loop should complete when all threads are closed
 }
