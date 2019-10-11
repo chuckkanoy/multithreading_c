@@ -28,7 +28,7 @@ void *handleThread(int mysockfd)
     while(strcmp(buffer, "EXIT\n") != 0)
     {
         void *ret;
-        usleep(1); //give main enough time to get another client if it needs to
+        sleep(1); //give main enough time to get another client if it needs to
 
         bzero(buffer,256);
         n = read(mysockfd,buffer,255); //reads from socket
@@ -94,11 +94,12 @@ int main(int argc, char* argv[])
 
     //LISTEN TO SOCKET
     listen(sockfd, 5);
-    clilen = sizeof(cli_addr);
-
+    printf("Listening...\n");
     //LOOP
     while(1)
     {
+        usleep(1); //give main enough time to get another client if it needs to
+        clilen = sizeof(cli_addr);
         newsockfd = accept(sockfd,
                            (struct sockaddr *) &cli_addr,
                            &clilen); /*waits until proper connection has been made to a client
@@ -122,13 +123,17 @@ int main(int argc, char* argv[])
         }
         */
 
-        if(pthread_create(&pth, NULL, handleThread(newsockfd), "process...") != 0){
+
+        //close(sockfd);
+        if(pthread_create(&pth, NULL, handleThread(newsockfd), "process...") == 0){
+            close(sockfd);
+            //pthread_join(pth, NULL);
+        }
+        else{
             printf("Failed to create thread\n");
         }
-        usleep(1); //give main enough time to get another client if it needs to
-        pthread_join(&pth, NULL);
-        //close(sockfd);
         //usleep(1); //give main enough time to get another client if it needs to
+
     }
     //END LOOP
 
