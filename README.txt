@@ -1,6 +1,3 @@
-Assignment 2
-Charles Kanoy
-
 To compile in LINUX:
 	server: gcc server.c -o server.exe -lpthread
 	client: gcc client.c -o client.exe
